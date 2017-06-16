@@ -1,0 +1,180 @@
+DBS Final Exam (Practical)
+
+HOW TO READ THIS DOCUMENT
+
+Lines beginning with "***" are Answer lines.  They will have a section in square brackets that may contain a numeric range that your answer should fall into.  You must replace this range with your answer.  These answers are a graded part of the exam, so don't miss any of them!  Example:
+
+*** Record Count: [ 15-25 ]
+
+In the previous line, you would replace "15-25" with the number of records you got back, such as "17".
+
+You will also see lines like the following:
+
+SQL:
+
+After each of these lines, paste your SQL that answers the previous question.  Make sure your SQL is formatted to be readable, with major clauses like SELECT, FROM, and WHERE on their own lines, and not just one giant block of code.  Part of your grade for each question is based on legibility.
+
+
+Save a copy of this exam as "yourname.txt" in the same folder.  Make sure it is still plain textâ not RTF, not HTML, not DOC.  Just plain text.  Failure to do so will result in a zero for the final.
+
+EXAM
+
+*** Name: [   ]
+
+
+PART I: Import
+
+With the exam you have been given files named exam.sql, exam.csv, and exam.pdf.
+
+1. Create a new database named "dbsXXXXF". (XXXX is the current year and month)
+
+2. Switch to your new "dbsXXXXF" database.
+
+3. Run the SQL dump (final_weblog_SQL_DUMP.sql) against your database.
+
+*** Record count of "log_all" table: [ 5900-6000 ]
+
+This data set represents the web server hit logs for a single website for a single day.  You're going to do some analysis of the data, but first you need to normalize it properly -- which requires proper keying and indexing.
+
+
+PART II: Keys and Indexes
+
+1. Three of the supporting tables, "log_areas", "log_pages", and "log_referers", use auto-increment IDs for primary keys. These keys have already been created. The fourth table, "log_clients" is going to use some different logic for its ID field, and it will not be an auto-increment identity column.  It still needs to be a primary key, so use an ALTER TABLE statement to make the "ID" column the primary key. 
+
+SQL:
+
+
+2. To ensure that the data normalized into these supporting tables is not duplicated, a unique index should be created on each of the text fields in each of those four supporting tables.  Write four ALTER TABLE or CREATE UNIQUE INDEX statements to add these unique indexes.  Note that while the "page" column in the "log_pages" table will have a unique index, the "filetype" column will not.
+
+SQL, log_areas:
+SQL, log_clients:
+SQL, log_pages:
+SQL, log_referers:
+
+
+3. Using an ALTER TABLE or CREATE INDEX statement, create a regular (non-unique) index on the "filetype" column in the "log_pages" table:
+
+SQL:
+
+
+4. The "log_hits" table uses a composite primary key that includes the "hit_date", "hit_time", and "hit_ms" columns.  Use an ALTER TABLE statement to create this primary key:
+
+SQL:
+
+
+5. The "log_hits" table has foreign keys out to the supporting tables.  Use four ALTER TABLE statements to add foreign keys for the "page_id", "client_id", "referer_id", and "area_id" columns.  Make sure that the foreign keys are set to cascade updates and deletes.
+
+SQL (4 statements):
+
+
+
+PART III: Normalization
+
+Your first goal for this section is to split the data from the "log_all" table into the supporting tables.
+
+In this section, keep an eye out for errors as you import -- the unique indexes and primary keys you created will prevent you from inserting duplicate records, so your SELECT queries will need to ensure that each record is unique.
+
+6. Use an INSERT-SELECT statement to populate the "log_areas" table.  Make sure you don't insert any NULL or blank areas!
+
+*** Count of records in "log_areas": [ 10-15 ]
+SQL:
+
+
+7. Do the same for "log_referers".
+
+*** Count of records in "log_referers": [ 240-260 ]
+SQL:
+
+
+8. Use an INSERT-SELECT statement to populate the "log_pages" table from your "log_all" table.  The table has two non-identity columns: "page" and "filetype" -- be sure to include both of them. Make sure you don't insert any NULL or blank areas!
+(Hint: Page = uri_stem)
+
+*** Count of records in "log_pages": [ 420-440 ]
+SQL:
+
+
+9. The "id" column for the "log_clients" table isn't an identity (auto-increment) column.  Instead, it uses a natural key: the conversion of the dotted IP address to its numeric equivalent.  The MySQL function INET_ATON can be used to remove the non-numeric characters from ip_client so the value can be inserted into log_clients.id. Use an INSERT-SELECT statement to populate your "log_clients" table. (Hint: populate log_clients.id as INET_ATON(ip_client) ). Be sure to populate both columns of the log_clients table with one SQL statement.
+
+*** Count of records in "log_clients": [ 420-440 ]
+SQL:
+
+
+10. With the supporting tables populated, you can now populate the "log_hits" table with an INSERT-SELECT statement, left joining with the "log_all" table with the supporting tables. (Hint: Use a left join on the lookup tables (All of them). Log_all is the primary table.)
+
+*** Count of records in "log_hits": [ 5900-6000 ]
+SQL:
+
+
+Now that your tables are normalized, keyed, and indexed, you should no longer use the "log_all" table for any of your queries.  To prevent you from forgetting, you may want to rename the table to "DONOTUSE". You can use a GUI. You will not get any points for queries that use this table.
+
+
+PART IV: Views
+
+11. The analysis later will include only the executed pages such as PHP and CFM files, and not any of the images, CSS, JavaScript, etc.  Create a view named "log_scripts" that selects the "id", "page", and "filetype" columns of the "log_pages" table, but only for PHP and CFM files. 
+
+*** Count of records in view "log_scripts": [ 280-300 ]
+SQL:
+
+
+12. Create a view that only contains the hits to these PHP and CFM script files and name it "log_script_hits".  It should be a join of the "log_hits" table to the "log_scripts" view.  It should have all of the columns from the "log_hits" table, and none from the "log_scripts" view.  (You're joining to the view only to filter out anything that isn't a script -- Do not to get extra columns.)  
+
+*** Count of records in view "log_script_hits": [ 1700-1750 ]
+SQL:
+
+
+
+PART V: Aggregates
+
+13. Create a query to determine which script page (from "log_script_hits" joined to "log_pages") got the most hits. Use an order by but not a limit. 
+
+*** Page with most hits: [  ]
+*** Hit count: [ 400-420 ]
+*** Count of all rows returned: [270-300]
+
+SQL:
+
+
+
+14. Filter the above query to only use CFM pages, not PHP.
+
+*** Page: [  ]
+*** Hit count: [ 120-150 ]
+*** Count of all rows returned: [3-10]
+
+SQL:
+
+
+15. Refactor the last query to include columns that get total, average, minimum, and maximum times spent rendering the content (from the "time_ms" column).
+
+*** Total Time (ms): [ 49000-50000 ]
+*** Average Time (ms): [ 400-420  ]
+*** Minimum Time (ms): [ 40-100  ]
+*** Maximum Time (ms): [ 2000-2100 ]
+
+SQL:
+
+PART VII: Numbers Tables 
+
+16. Numbers1000 is a numbers table with the values 100 through 1000 (counting by 100's). 
+Write a select statement to return the number of hits each 100 ms grouping took. 
+(Hint: Use a scalar sub-query)
+
+    MS          HITCOUNT
+    ------------  -------------
+    100        	[ 590-610 ]			These are the hits that took 0-100 ms to serve.
+    200        	[ 580-590 ]
+    300        	[ 580-590 ]
+    400       	[ 560-580 ]
+    500  	[ 630-600 ]
+	É
+
+SQL:
+
+
+
+FINISHING YOUR EXAM (Complete this or you WILL loose points)
+
+1. Rename your file. FirstInitial + LastName.txt
+
+2. Submit this txt file to FSO. 
+
