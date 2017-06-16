@@ -1,0 +1,78 @@
+// now that the hash table class is written and tested, we can add 
+// a method to the hash table to give us some basic information about
+// the hash function we have chosen (distribution info, #of empty 
+// buckets, etc.)
+
+// in my particular hash table class, my data members are-
+//	SLList<Type>* theTable 	- this is the array of lists
+//	unsigned int numBuck 	- this is the number of buckets
+// ...you will want to crtl+h (find and replace) all instances
+// of these with variable names that match your own data members
+
+template <typename Type>
+void HTable<Type>::printSomeStuff(const char* filePath = "hashdata.txt")
+{
+	// we're gonna need to open a file for all this data
+	ofstream outFile(filePath);
+	
+	// let's make sure the file got opened
+	if(outFile.is_open())
+	{
+		// number of empty buckets, total count of elements, index of emptiest bucket, index of fullest bucket
+		unsigned int empty = 0;
+		unsigned int totalCount = 0;
+		unsigned int loIndex = 0;
+		unsigned int hiIndex = 0;
+		
+		// loop through all the buckets
+		for(unsigned int i = 0; i < numBuck; ++i)
+		{
+			// add the number of elements in each bucket to the total count
+			totalCount += theTable[i].size();
+			// print the index of this bucket and its size to the file
+			outFile << i << " : " << theTable[i].size() << '\n';
+
+			// if this list is empty, increment the empty count
+			if(theTable[i].size() == 0)
+				++empty;
+				
+			// if this list has less elements than the lowest one recorded so far, store this as the new lowest
+			if(theTable[i].size() < theTable[loIndex].size())
+				loIndex = i;
+			// else, if this list has more elements than the highest one recorded so far, store this as the new highest
+			else if(theTable[i].size() > theTable[hiIndex].size())
+				hiIndex = i;
+		}
+
+		// print the total count of items and number of buckets to the file
+		outFile << '\n' << totalCount << " Total items stored in " << numBuck << " buckets\n";
+		// print the number of empty buckets
+		outFile << '\n' <<empty << " Buckets are empty\n\n";
+		// get the number of elements in the emptiest bucket
+		unsigned int Low = theTable[loIndex].size();
+		// get the range fullest-emptiest+1
+		unsigned int range = theTable[hiIndex].size() - Low + 1;
+		// print this info to the file
+		outFile << "each bucket contains between " << Low << " and " << Low+range-1 << " items.\n\n";
+
+		// make a new array to count how many buckets contain each number of items between the emptiest and fullest
+		// and initialize each cell to 0
+		unsigned int* arr = new unsigned int[range];
+		for(unsigned int j = 0; j < range; ++j)
+			arr[j] = 0;
+
+		// now we go through and count how many buckets contain each number of items...
+		// 3 buckets have 15 items
+		// 5 buckets have 16 items
+		// etc.
+		for(unsigned int k = 0; k < numBuck; ++k)
+			++arr[theTable[k].size() - Low];
+
+		// now print this data to the file
+		for(unsigned int p = 0; p < range; ++p)
+			outFile << arr[p] << " buckets have " << p+Low << " items\n";
+
+		// delete the array we made a minute ago, we are done with it
+		delete[] arr;
+	}
+}

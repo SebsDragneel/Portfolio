@@ -1,0 +1,21 @@
+#include "stdafx.h"
+#include "Game.h"
+#include "Player.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// CLASSES
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+int main()
+{
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetBreakAlloc(-1);
+
+	Game* game = new Game();
+	Player* player = new Player();
+	
+	game->GameLoop();
+	
+
+	return 0;
+}
