@@ -1,0 +1,15 @@
+//TODO: Add client functionality that complies with ClientWrapper Usage.
+#include "../platform.h"
+#include "../definitions.h"
+
+class Client
+{
+	SOCKET mClient = INVALID_SOCKET;
+	bool isShutdown = false;
+public:
+	
+	int init(uint16_t port, char* address);
+	int readMessage(char* buffer, int32_t size);
+	int sendMessage(char* data, int32_t length);
+	void stop();
+};
